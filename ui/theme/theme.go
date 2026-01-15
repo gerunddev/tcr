@@ -83,6 +83,30 @@ var (
 			Background(ColorSurface)
 )
 
+// Search styles
+var (
+	// Background highlight for matched lines
+	SearchMatchLineStyle = lipgloss.NewStyle().
+				Background(lipgloss.Color("#3D3A3E")) // Slightly lighter than background
+
+	// Current match line (more prominent)
+	SearchCurrentLineStyle = lipgloss.NewStyle().
+				Background(ColorSurface).
+				Bold(true)
+
+	// Search bar styles
+	SearchBarStyle = lipgloss.NewStyle().
+			Foreground(ColorDimWhite).
+			Background(ColorSurface)
+
+	SearchPromptStyle = lipgloss.NewStyle().
+				Foreground(ColorYellow).
+				Bold(true)
+
+	SearchStatusStyle = lipgloss.NewStyle().
+				Foreground(ColorDimWhite)
+)
+
 // Floating window styles
 var (
 	FloatingWindowStyle = lipgloss.NewStyle().

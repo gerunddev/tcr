@@ -20,7 +20,8 @@ func (h HelpHint) Format() string {
 
 // HelpBarContext captures the current UI state for help bar rendering
 type HelpBarContext struct {
-	ModalOpen bool // True if feedback modal is open
+	ModalOpen    bool // True if feedback modal is open
+	SearchActive bool // True if search mode is active
 }
 
 // getHints returns context-specific hints
@@ -32,10 +33,18 @@ func getHints(ctx HelpBarContext) []HelpHint {
 		}
 	}
 
+	if ctx.SearchActive {
+		return []HelpHint{
+			{Key: "enter", Desc: "cycle"},
+			{Key: "esc", Desc: "close"},
+		}
+	}
+
 	// Both panels always active with their own keys
 	return []HelpHint{
 		{Key: "up/dn", Desc: "file nav"},
 		{Key: "C-n/C-p", Desc: "diff nav"},
+		{Key: "/", Desc: "search"},
 		{Key: "enter", Desc: "feedback"},
 		{Key: "q", Desc: "quit"},
 	}

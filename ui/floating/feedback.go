@@ -113,8 +113,12 @@ func (m *FeedbackModal) View() string {
 	// Build content
 	var lines []string
 
-	// Show context: file:line (lineNumber is already 1-indexed from CalculateLineNumber)
-	context := theme.DimmedStyle.Render(fmt.Sprintf("@%s:%d", m.filePath, m.lineNumber))
+	// Show context: file path (line number disabled until CalculateLineNumber is fixed)
+	// TODO: Re-enable line number display once CalculateLineNumber correctly maps
+	// diff cursor positions to actual source file line numbers. The function needs
+	// to parse unified diff hunk headers and count context/addition lines properly.
+	// Format should be: fmt.Sprintf("@%s:%d", m.filePath, m.lineNumber)
+	context := theme.DimmedStyle.Render(fmt.Sprintf("@%s", m.filePath))
 	lines = append(lines, context)
 	lines = append(lines, "")
 
@@ -210,43 +214,75 @@ func (m *FeedbackModal) Value() string {
 	return m.textarea.Value()
 }
 
-// CalculateLineNumber attempts to get actual line number from diff
-// This is a heuristic based on diff format
+// CalculateLineNumber converts a diff cursor position to the actual file line number.
+// It parses unified diff format hunk headers (@@ -old,count +new,count @@) and counts
+// context/addition lines to determine the line number in the current version of the file.
 func CalculateLineNumber(diffContent string, cursorLine int) int {
 	lines := strings.Split(diffContent, "\n")
 	if cursorLine >= len(lines) {
 		return cursorLine + 1
 	}
 
-	// Find the most recent hunk header before cursor
-	currentLine := 0
+	// Track state
+	var newFileStart int // Starting line number in new file (from hunk header)
+	var linesInNewFile int // Count of lines we've seen that exist in new file
+	inHunk := false
+
 	for i := 0; i <= cursorLine && i < len(lines); i++ {
 		line := lines[i]
 
-		// Parse hunk header: @@ -start,count +start,count @@
+		// Parse hunk header: @@ -old,count +new,count @@ optional context
 		if strings.HasPrefix(line, "@@") {
-			// Extract the new file line number
-			parts := strings.Split(line, "+")
-			if len(parts) >= 2 {
-				numPart := strings.Split(parts[1], ",")[0]
-				numPart = strings.TrimSpace(numPart)
+			// Find the +N or +N,M part
+			// Format: @@ -1,3 +1,4 @@ or @@ -1 +1 @@
+			if idx := strings.Index(line, " +"); idx != -1 {
+				rest := line[idx+2:] // Skip " +"
+				// Find where the number ends (space, comma, or end)
+				end := strings.IndexAny(rest, ", ")
+				if end == -1 {
+					end = len(rest)
+				}
 				var n int
-				fmt.Sscanf(numPart, "%d", &n)
-				currentLine = n - 1 // Will be incremented for each non-deleted line
+				if _, err := fmt.Sscanf(rest[:end], "%d", &n); err == nil {
+					newFileStart = n
+					linesInNewFile = 0
+					inHunk = true
+				}
 			}
-		} else if i > 0 {
-			// Count lines in new file (context and additions)
-			if !strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "\\") {
-				currentLine++
+			continue
+		}
+
+		// Only count lines when we're inside a hunk
+		if inHunk {
+			if len(line) == 0 {
+				// Empty line - in proper diff this would be " " but handle gracefully
+				// Treat as context line (exists in new file)
+				linesInNewFile++
+			} else {
+				firstChar := line[0]
+				// Context lines (space) and additions (+) exist in new file
+				if firstChar == ' ' || firstChar == '+' {
+					linesInNewFile++
+				}
+				// Deletions (-) don't exist in new file, don't count
+				// Backslash lines (\ No newline...) don't count
 			}
 		}
 	}
 
-	if currentLine == 0 {
-		currentLine = cursorLine + 1
+	// Calculate final line number
+	if inHunk && newFileStart > 0 {
+		// linesInNewFile counts lines after the hunk header
+		// If cursor is on hunk header itself, linesInNewFile=0, return newFileStart
+		// If cursor is on first content line, linesInNewFile=1, return newFileStart
+		if linesInNewFile == 0 {
+			return newFileStart
+		}
+		return newFileStart + linesInNewFile - 1
 	}
 
-	return currentLine
+	// Fallback for cursor positions before any hunk
+	return cursorLine + 1
 }
 
 // Simple overlay without background dimming

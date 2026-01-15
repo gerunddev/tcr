@@ -130,6 +130,13 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return a, cmd
 		}
 
+		// Handle search mode - route all keys to diff panel
+		if a.diffPanel.IsSearching() {
+			var cmd tea.Cmd
+			_, cmd = a.diffPanel.Update(msg)
+			return a, cmd
+		}
+
 		// Global key handling
 		switch msg.String() {
 		case "q", "ctrl+c":
@@ -151,9 +158,9 @@ func (a *App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		// Route emacs bindings to diff panel (always)
+		// Route emacs bindings and "/" to diff panel (always)
 		switch msg.String() {
-		case "ctrl+n", "ctrl+p", "ctrl+v", "alt+v", "alt+<", "alt+>":
+		case "ctrl+n", "ctrl+p", "ctrl+v", "alt+v", "alt+<", "alt+>", "/":
 			var cmd tea.Cmd
 			_, cmd = a.diffPanel.Update(msg)
 			if cmd != nil {
@@ -238,7 +245,8 @@ func (a *App) View() string {
 
 	// Add help bar
 	helpCtx := HelpBarContext{
-		ModalOpen: a.modalOpen,
+		ModalOpen:    a.modalOpen,
+		SearchActive: a.diffPanel.IsSearching(),
 	}
 	helpBar := RenderHelpBar(helpCtx, a.width)
 

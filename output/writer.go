@@ -30,10 +30,14 @@ func AppendFeedback(outputPath, filePath string, line int, comment string) error
 	defer f.Close()
 
 	// Format the feedback
-	// @path:line
+	// TODO: Re-enable line number in output once CalculateLineNumber is fixed
+	// to correctly map diff cursor positions to actual source file line numbers.
+	// Format should be: fmt.Sprintf("@%s:%d\n%s\n\n", filePath, line, ...)
+	// @path
 	// comment
 	//
-	feedback := fmt.Sprintf("@%s:%d\n%s\n\n", filePath, line, strings.TrimSpace(comment))
+	_ = line // silence unused parameter warning until line numbers are fixed
+	feedback := fmt.Sprintf("@%s\n%s\n\n", filePath, strings.TrimSpace(comment))
 
 	if _, err := f.WriteString(feedback); err != nil {
 		return fmt.Errorf("failed to write feedback: %w", err)
