@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gerund/tcr/ui/theme"
+	"github.com/gerunddev/tcr/ui/theme"
 )
 
 // HelpHint represents a single hint (key + description)

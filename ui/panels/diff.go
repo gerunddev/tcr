@@ -11,7 +11,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gerund/tcr/ui/theme"
+	"github.com/gerunddev/tcr/ui/theme"
 )
 
 // SearchState holds the state for diff search

@@ -2,7 +2,7 @@ package panels
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gerund/tcr/ui/borders"
+	"github.com/gerunddev/tcr/ui/borders"
 )
 
 // Panel defines the interface for all panels

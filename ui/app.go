@@ -5,11 +5,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gerund/tcr/output"
-	"github.com/gerund/tcr/ui/floating"
-	"github.com/gerund/tcr/ui/panels"
-	"github.com/gerund/tcr/ui/theme"
-	"github.com/gerund/tcr/vcs"
+	"github.com/gerunddev/tcr/output"
+	"github.com/gerunddev/tcr/ui/floating"
+	"github.com/gerunddev/tcr/ui/panels"
+	"github.com/gerunddev/tcr/ui/theme"
+	"github.com/gerunddev/tcr/vcs"
 )
 
 // App is the main application model

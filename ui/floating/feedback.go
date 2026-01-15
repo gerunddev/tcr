@@ -7,8 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/gerund/tcr/ui/borders"
-	"github.com/gerund/tcr/ui/theme"
+	"github.com/gerunddev/tcr/ui/borders"
+	"github.com/gerunddev/tcr/ui/theme"
 )
 
 // FeedbackSavedMsg is sent when feedback is saved

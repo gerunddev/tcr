@@ -1,4 +1,4 @@
-module github.com/gerund/tcr
+module github.com/gerunddev/tcr
 
 go 1.22
 

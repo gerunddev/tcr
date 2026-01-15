@@ -5,9 +5,9 @@ import (
 	"os"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/gerund/tcr/output"
-	"github.com/gerund/tcr/ui"
-	"github.com/gerund/tcr/vcs"
+	"github.com/gerunddev/tcr/output"
+	"github.com/gerunddev/tcr/ui"
+	"github.com/gerunddev/tcr/vcs"
 )
 
 func main() {
