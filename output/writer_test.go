@@ -35,11 +35,10 @@ func TestAppendFeedback(t *testing.T) {
 		t.Fatalf("Failed to read output: %v", err)
 	}
 
-	// TODO: Re-add :line numbers to expected output once CalculateLineNumber is fixed
-	expected := `@src/main.go
+	expected := `@src/main.go:42
 This is my feedback
 
-@src/other.go
+@src/other.go:15
 Another comment
 with multiple lines
 

@@ -1,0 +1,177 @@
+[
+  {
+    "iteration": 1,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text[0m [2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text[0m\n[2m[2m. [0m[0m[95m'[0m);                                   [2m[2m. [0m[0m[95m'[0m);\n[2m2 [0m                                      [2m2 [0m\n[91;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([91m'[0m[91;1;4m/[0m [92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([92m'[0m[92;1;4m\\[0m\n[91;1m[2m. [0m[0m[91mn'[0m);                                  [92;1m[2m. [0m[0m[92mn'[0m);\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index,  [2m4 [0m$.each(contentArray, [1mfunction[0m(index, \n[2m[2m. [0m[0mnewLine) {                            [2m[2m. [0m[0mnewLine) {\n[2m5 [0m  $([95m'.text'[0m).append([95m'<span style=\"dis[0m [2m5 [0m  $([95m'.text'[0m).append([95m'<span style=\"dis[0m\n[2m[2m. [0m[0m[95mplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m) [2m[2m. [0m[0m[95mplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m)\n[2m[2m. [0m[0m;                                     [2m[2m. [0m[0m;\n[2m6 [0m                                      [2m6 [0m",
+    "chosenDiffLine": "[92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([92m'[0m[92;1;4m\\[0m",
+    "chosenLineContent": "var contentArray = printText.split('\\n');",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 2,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m . [0m[92;1m 7 [0m  [1mvar[0m lineID [1m=[0m index;\n[2m . [0m[92;1m 8 [0m  [1mvar[0m self [1m=[0m $(this);\n[2m . [0m[92;1m 9 [0m    setTimeout([1mfunction[0m () {\n[2m . [0m[92;1m10 [0m      [92mconsole.log[0m[92;1m([0m[92m'Rendering line:',[0m [92mlineID[0m[92;1m)[0m[92m;[0m\n[2m . [0m[92;1m11 [0m      $.each(self, [1mfunction[0m(index, chunk){\n[2m . [0m[92;1m12 [0m          setTimeout([1mfunction[0m () {\n[2m . [0m[92;1m13 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<span>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);",
+    "chosenDiffLine": "[92;1m10 [0m      [92mconsole.log[0m[92;1m([0m[92m'Rendering line:',[0m [92mlineID[0m[92;1m)[0m[92m;[0m",
+    "chosenLineContent": "      console.log('Rendering line:', lineID);",
+    "expectedLineNumber": 10
+  },
+  {
+    "iteration": 3,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m. [0m[92;1m1 [0m[92m'use strict';[0m\n[2m. [0m[92;1m2 [0m\n[2m1 [0m[2m3 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m4 [0m",
+    "chosenDiffLine": "[92;1m1 [0m[92m'use strict';[0m",
+    "chosenLineContent": "'use strict';",
+    "expectedLineNumber": 1
+  },
+  {
+    "iteration": 4,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 4 [0m$.each(contentArray, [1mfunction[0m(index, [2m 4 [0m$.each(contentArray, [1mfunction[0m(index,\n[2m[2m . [0m[0m newLine) {                          [2m[2m . [0m[0m newLine) {\n[2m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"di[0m [2m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"di[0m\n[2m[2m . [0m[0m[95msplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>[0m [2m[2m . [0m[0m[95msplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>[0m\n[2m[2m . [0m[0m[95m'[0m);                                  [2m[2m . [0m[0m[95m'[0m);\n[2m 6 [0m                                     [2m 6 [0m  \n[91;1m 7 [0m  [1mvar[0m [91mlineID[0m [1m=[0m index;                [92;1m 7 [0m  [1mvar[0m [92mcurrentLineId[0m [1m=[0m index;\n[2m 8 [0m  [1mvar[0m self [1m=[0m $(this);                [2m 8 [0m  [1mvar[0m self [1m=[0m $(this);\n[2m 9 [0m    setTimeout([1mfunction[0m () {         [2m 9 [0m    setTimeout([1mfunction[0m () {\n[2m10 [0m      $.each(self, [1mfunction[0m(index, c [2m10 [0m      $.each(self, [1mfunction[0m(index, c\n[2m[2m.. [0m[0mhunk){                               [2m[2m.. [0m[0mhunk){\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[91;1m12 [0m            $([95m'#'[0m[1m+[0m[91mlineID[0m).append([95m\"<s[0m [92;1m12 [0m            $([95m'#'[0m[1m+[0m[92mcurrentLineId[0m).app\n[91;1m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [92;1m[2m.. [0m[0mend([95m\"<span>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[2m14 [0m          }, index[1m*[0m5);               [2m14 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                            [2m15 [0m      });",
+    "chosenDiffLine": "[92;1m 7 [0m  [1mvar[0m [92mcurrentLineId[0m [1m=[0m index;",
+    "chosenLineContent": "  var currentLineId = index;",
+    "expectedLineNumber": 7
+  },
+  {
+    "iteration": 5,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m [2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m\n[2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[91;1m14 [0m          }, index[1m*[0m[91m5[0m);               [92;1m14 [0m          }, index[1m*[0m[92m10[0m);\n[2m15 [0m      });                            [2m15 [0m      });\n[2m16 [0m                                     [2m16 [0m      \n[2m17 [0m    }, index[1m*[0m100);                   [2m17 [0m    }, index[1m*[0m100);",
+    "chosenDiffLine": "[92;1m14 [0m          }, index[1m*[0m[92m10[0m);",
+    "chosenLineContent": "          }, index*10);",
+    "expectedLineNumber": 14
+  },
+  {
+    "iteration": 6,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[2m 1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m 2 [0m\n[2m3 [0m[2m 3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n[2m. [0m[92;1m 4 [0m[92;3m// Process each line[0m\n[2m4 [0m[2m 5 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m[2m 6 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m6 [0m[2m 7 [0m",
+    "chosenDiffLine": "[92;1m 4 [0m[92;3m// Process each line[0m",
+    "chosenLineContent": "// Process each line",
+    "expectedLineNumber": 4
+  },
+  {
+    "iteration": 7,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m14 [0m          }, index[1m*[0m5);    [2m14 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                 [2m15 [0m      });\n[2m16 [0m                          [2m16 [0m      \n[91;1m17 [0m    }, index[1m*[0m[91m100[0m);        [92;1m17 [0m    }, index[1m*[0m[92m200[0m);\n[2m18 [0m});                       [2m18 [0m});",
+    "chosenDiffLine": "[92;1m17 [0m    }, index[1m*[0m[92m200[0m);",
+    "chosenLineContent": "    }, index*200);",
+    "expectedLineNumber": 17
+  },
+  {
+    "iteration": 8,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"di[0m [2m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"di[0m\n[2m[2m . [0m[0m[95msplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>[0m [2m[2m . [0m[0m[95msplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>[0m\n[2m[2m . [0m[0m[95m'[0m);                                  [2m[2m . [0m[0m[95m'[0m);\n[2m 6 [0m                                     [2m 6 [0m  \n[2m 7 [0m  [1mvar[0m lineID [1m=[0m index;                [2m 7 [0m  [1mvar[0m lineID [1m=[0m index;\n[91;1m 8 [0m  [1mvar[0m [91mself[0m [1m=[0m $(this);                [92;1m 8 [0m  [1mvar[0m [92mcurrentElement[0m [1m=[0m $(this);\n[2m 9 [0m    setTimeout([1mfunction[0m () {         [2m 9 [0m    setTimeout([1mfunction[0m () {\n[91;1m10 [0m      $.each([91mself[0m, [1mfunction[0m(index, c [92;1m10 [0m      $.each([92mcurrentElement[0m, [1mfunctio[0m\n[91;1m[2m.. [0m[0mhunk){                               [92;1m[2m.. [0m[0m[1mn[0m(index, chunk){\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m [2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m\n[2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());",
+    "chosenDiffLine": "[92;1m 8 [0m  [1mvar[0m [92mcurrentElement[0m [1m=[0m $(this);",
+    "chosenLineContent": "  var currentElement = $(this);",
+    "expectedLineNumber": 8
+  },
+  {
+    "iteration": 9,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[91;1m1 [0m[91;1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text[0m [92;1m1 [0m[92;1mlet[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text[0m\n[91;1m[2m. [0m[0m[95m'[0m);                                   [92;1m[2m. [0m[0m[95m'[0m);\n[2m2 [0m                                      [2m2 [0m\n[2m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/[0m [2m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/[0m\n[2m[2m. [0m[0m[95mn'[0m);                                  [2m[2m. [0m[0m[95mn'[0m);\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index,  [2m4 [0m$.each(contentArray, [1mfunction[0m(index, \n[2m[2m. [0m[0mnewLine) {                            [2m[2m. [0m[0mnewLine) {",
+    "chosenDiffLine": "[92;1m1 [0m[92;1mlet[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text[0m",
+    "chosenLineContent": "let printText = $('.text').data('text');",
+    "expectedLineNumber": 1
+  },
+  {
+    "iteration": 10,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m. [0m[92;1m1 [0m[92;3m/** @fileoverview Typewriter effect */[0m\n[2m1 [0m[2m2 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m3 [0m\n[2m3 [0m[2m4 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);",
+    "chosenDiffLine": "[92;1m1 [0m[92;3m/** @fileoverview Typewriter effect */[0m",
+    "chosenLineContent": "/** @fileoverview Typewriter effect */",
+    "expectedLineNumber": 1
+  },
+  {
+    "iteration": 11,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 2 [0m                                     [2m 2 [0m\n[2m 3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'[0m [2m 3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'[0m\n[2m[2m . [0m[0m[95m/n'[0m);                                [2m[2m . [0m[0m[95m/n'[0m);\n[2m 4 [0m$.each(contentArray, [1mfunction[0m(index, [2m 4 [0m$.each(contentArray, [1mfunction[0m(index,\n[2m[2m . [0m[0m newLine) {                          [2m[2m . [0m[0m newLine) {\n[91;1m 5 [0m  $([95m'.text'[0m).append([91m'<span style=\"di[0m [92;1m 5 [0m  $([95m'.text'[0m).append([92m'<span [0m[92;1;4mclass=\"li[0m\n[91;1m[2m . [0m[0m[91msplay:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>[0m [92;1m[2m . [0m[0m[92;1;4mne-content\"[0m [92mstyle=\"display:block;\" i[0m\n[91;1m[2m . [0m[0m[95m'[0m);                                  [92;1m[2m . [0m[0m[92md=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m 6 [0m                                     [2m 6 [0m  \n[2m 7 [0m  [1mvar[0m lineID [1m=[0m index;                [2m 7 [0m  [1mvar[0m lineID [1m=[0m index;\n[2m 8 [0m  [1mvar[0m self [1m=[0m $(this);                [2m 8 [0m  [1mvar[0m self [1m=[0m $(this);",
+    "chosenDiffLine": "[92;1m 5 [0m  $([95m'.text'[0m).append([92m'<span [0m[92;1;4mclass=\"li[0m",
+    "chosenLineContent": "  $('.text').append('<span class=\"line-content\" style=\"display:block;\" id=\"'+index+'\"></span>');",
+    "expectedLineNumber": 5
+  },
+  {
+    "iteration": 12,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m2 [0m\n[2m. [0m[92;1m3 [0m[92;1mif[0m [92;1m(![0m[92mprintText[0m[92;1m)[0m [92;1mreturn[0m[92m;[0m\n[2m3 [0m[2m4 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n[2m4 [0m[2m5 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m[2m6 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);",
+    "chosenDiffLine": "[92;1m3 [0m[92;1mif[0m [92;1m(![0m[92mprintText[0m[92;1m)[0m [92;1mreturn[0m[92m;[0m",
+    "chosenLineContent": "if (!printText) return;",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 13,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 7 [0m  [1mvar[0m lineID [1m=[0m index;                [2m 7 [0m  [1mvar[0m lineID [1m=[0m index;\n[2m 8 [0m  [1mvar[0m self [1m=[0m $(this);                [2m 8 [0m  [1mvar[0m self [1m=[0m $(this);\n[2m 9 [0m    setTimeout([1mfunction[0m () {         [2m 9 [0m    setTimeout([1mfunction[0m () {\n[91;1m10 [0m      $.each(self, [1mfunction[0m(index, [91mc[0m [92;1m10 [0m      $.each(self, [1mfunction[0m(index, [92mc[0m\n[91;1m[2m.. [0m[0m[91mhunk[0m){                               [92;1m[2m.. [0m[0m[92mhar[0m){\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[91;1m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m [92;1m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m\n[91;1m[2m.. [0m[0m[95mpan>\"[0m[1m+[0m[91mchunk[0m[1m+[0m[95m\"</span>\"[0m);              [92;1m[2m.. [0m[0m[95mpan>\"[0m[1m+[0m[92mchar[0m[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[2m14 [0m          }, index[1m*[0m5);               [2m14 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                            [2m15 [0m      });",
+    "chosenDiffLine": "[92;1m10 [0m      $.each(self, [1mfunction[0m(index, [92mc[0m",
+    "chosenLineContent": "      $.each(self, function(index, char){",
+    "expectedLineNumber": 10
+  },
+  {
+    "iteration": 14,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m. [0m[92;1m1 [0m[92m'use strict';[0m\n[2m. [0m[92;1m2 [0m\n[2m1 [0m[2m3 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m4 [0m",
+    "chosenDiffLine": "[2m3 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);",
+    "chosenLineContent": "var printText = $('.text').data('text');",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 15,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- 1/2 --- JavaScript[0m\n[2m . [0m[92;1m 1 [0m[92;1mconst[0m [92;1mCHAR_DELAY[0m [92;1m=[0m [92m5;[0m\n[2m 1 [0m[2m 2 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m 2 [0m[2m 3 [0m\n[2m 3 [0m[2m 4 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n\n[1mtemp-fixture.js[0m[2m --- 2/2 --- JavaScript[0m\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m12 [0m          setTimeout([1mfunction[0m () {\n[2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m [2m13 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<s[0m\n[2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [2m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m14 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[91;1m14 [0m          }, index[1m*[0m[91m5[0m);               [92;1m15 [0m          }, index[1m*[0m[92;1mCHAR_DELAY[0m);\n[2m15 [0m      });                            [2m16 [0m      });\n[2m16 [0m                                     [2m17 [0m      \n[2m17 [0m    }, index[1m*[0m100);                   [2m18 [0m    }, index[1m*[0m100);",
+    "chosenDiffLine": "[92;1m15 [0m          }, index[1m*[0m[92;1mCHAR_DELAY[0m);",
+    "chosenLineContent": "          }, index*CHAR_DELAY);",
+    "expectedLineNumber": 15
+  },
+  {
+    "iteration": 16,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m\n[92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m)[92m.map[0m[92;1m([0m[92mline[0m [92;1m=>[0m [92mline.trim[0m[92;1m())[0m;\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m6 [0m",
+    "chosenDiffLine": "[92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m)[92m.map[0m[92;1m([0m[92mline[0m [92;1m=>[0m [92mline.trim[0m[92;1m())[0m;",
+    "chosenLineContent": "var contentArray = printText.split('/n').map(line => line.trim());",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 17,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m\n[92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m)[92m.filter[0m[92;1m(Boolean)[0m;\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m6 [0m",
+    "chosenDiffLine": "[92;1m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m)[92m.filter[0m[92;1m(Boolean)[0m;",
+    "chosenLineContent": "var contentArray = printText.split('/n').filter(Boolean);",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 18,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 9 [0m    setTimeout([1mfunction[0m () {         [2m 9 [0m    setTimeout([1mfunction[0m () {\n[2m10 [0m      $.each(self, [1mfunction[0m(index, c [2m10 [0m      $.each(self, [1mfunction[0m(index, c\n[2m[2m.. [0m[0mhunk){                               [2m[2m.. [0m[0mhunk){\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[91;1m12 [0m            $([91m'#'[0m[91;1m+[0m[91mlineID[0m).append([95m\"<s[0m [92;1m12 [0m            $([92m`#${lineID}`[0m).append([95m\"[0m\n[91;1m[2m.. [0m[0m[95mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [92;1m[2m.. [0m[0m[95m<span>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[2m14 [0m          }, index[1m*[0m5);               [2m14 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                            [2m15 [0m      });",
+    "chosenDiffLine": "[92;1m12 [0m            $([92m`#${lineID}`[0m).append([95m\"[0m",
+    "chosenLineContent": "            $(`#${lineID}`).append(\"<span>\"+chunk+\"</span>\");",
+    "expectedLineNumber": 12
+  },
+  {
+    "iteration": 19,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[2m 1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m[2m 2 [0m\n[2m3 [0m[2m 3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n[2m. [0m[92;1m 4 [0m[92;1mif[0m [92;1m([0m[92mcontentArray.length[0m [92;1m===[0m [92m0[0m[92;1m)[0m [92;1m{[0m\n[2m. [0m[92;1m 5 [0m  [92mconsole.warn[0m[92;1m([0m[92m'contentArray is empty, nothing to print'[0m[92;1m)[0m[92m;[0m\n[2m. [0m[92;1m 6 [0m[92;1m}[0m\n[2m4 [0m[2m 7 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m[2m 8 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);",
+    "chosenDiffLine": "[92;1m 5 [0m  [92mconsole.warn[0m[92;1m([0m[92m'contentArray is empty, nothing to print'[0m[92;1m)[0m[92m;[0m",
+    "chosenLineContent": "  console.warn('contentArray is empty, nothing to print');",
+    "expectedLineNumber": 5
+  },
+  {
+    "iteration": 20,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- 1/2 --- JavaScript[0m\n[2m . [0m[92;1m 1 [0m[92;1mvar[0m [92;1mLINE_DELAY[0m [92;1m=[0m [92m100;[0m\n[2m 1 [0m[2m 2 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m 2 [0m[2m 3 [0m\n[2m 3 [0m[2m 4 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n\n[1mtemp-fixture.js[0m[2m --- 2/2 --- JavaScript[0m\n[2m14 [0m          }, index[1m*[0m5);               [2m15 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                            [2m16 [0m      });\n[2m16 [0m                                     [2m17 [0m      \n[91;1m17 [0m    }, index[1m*[0m[91m100[0m);                   [92;1m18 [0m    }, index[1m*[0m[92;1mLINE_DELAY[0m);\n[2m18 [0m});                                  [2m19 [0m});",
+    "chosenDiffLine": "[92;1m18 [0m    }, index[1m*[0m[92;1mLINE_DELAY[0m);",
+    "chosenLineContent": "    }, index*LINE_DELAY);",
+    "expectedLineNumber": 18
+  },
+  {
+    "iteration": 21,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m);\n[2m2 [0m\n[92;1m3 [0m[1mvar[0m contentArray [1m=[0m [92;1m([0mprintText [92;1m||[0m [92m''[0m[92;1m)[0m.split([95m'/n'[0m);\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[2m5 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m6 [0m",
+    "chosenDiffLine": "[92;1m3 [0m[1mvar[0m contentArray [1m=[0m [92;1m([0mprintText [92;1m||[0m [92m''[0m[92;1m)[0m.split([95m'/n'[0m);",
+    "chosenLineContent": "var contentArray = (printText || '').split('/n');",
+    "expectedLineNumber": 3
+  },
+  {
+    "iteration": 22,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 2 [0m\n[2m 3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n[2m 4 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {\n[92;1m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[92;1m+[0m[92mindex[0m[92;1m+[0m[92m'\" data-index=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);\n[2m 6 [0m  \n[2m 7 [0m  [1mvar[0m lineID [1m=[0m index;\n[2m 8 [0m  [1mvar[0m self [1m=[0m $(this);",
+    "chosenDiffLine": "[92;1m 5 [0m  $([95m'.text'[0m).append([95m'<span style=\"display:block;\" id=\"'[0m[92;1m+[0m[92mindex[0m[92;1m+[0m[92m'\" data-index=\"'[0m[1m+[0mindex[1m+[0m[95m'\"></span>'[0m);",
+    "chosenLineContent": "  $('.text').append('<span style=\"display:block;\" id=\"'+index+'\" data-index=\"'+index+'\"></span>');",
+    "expectedLineNumber": 5
+  },
+  {
+    "iteration": 23,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m10 [0m      $.each(self, [1mfunction[0m(index, chunk){\n[2m11 [0m          setTimeout([1mfunction[0m () {\n[2m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([95m\"<span>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[92;1m13 [0m            $([95m'body, html'[0m)[92m.stop[0m[92;1m()[0m.scrollTop($(document).height());\n[2m14 [0m          }, index[1m*[0m5);\n[2m15 [0m      });\n[2m16 [0m",
+    "chosenDiffLine": "[92;1m13 [0m            $([95m'body, html'[0m)[92m.stop[0m[92;1m()[0m.scrollTop($(document).height());",
+    "chosenLineContent": "            $('body, html').stop().scrollTop($(document).height());",
+    "expectedLineNumber": 13
+  },
+  {
+    "iteration": 24,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[92;1m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m)[92m.trim[0m[92;1m()[0m;\n[2m2 [0m\n[2m3 [0m[1mvar[0m contentArray [1m=[0m printText.split([95m'/n'[0m);\n[2m4 [0m$.each(contentArray, [1mfunction[0m(index, newLine) {",
+    "chosenDiffLine": "[92;1m1 [0m[1mvar[0m printText [1m=[0m $([95m'.text'[0m).data([95m'text'[0m)[92m.trim[0m[92;1m()[0m;",
+    "chosenLineContent": "var printText = $('.text').data('text').trim();",
+    "expectedLineNumber": 1
+  },
+  {
+    "iteration": 25,
+    "diff": "[1m[93mtemp-fixture.js[39m[0m[2m --- JavaScript[0m\n[2m 9 [0m    setTimeout([1mfunction[0m () {         [2m 9 [0m    setTimeout([1mfunction[0m () {\n[2m10 [0m      $.each(self, [1mfunction[0m(index, c [2m10 [0m      $.each(self, [1mfunction[0m(index, c\n[2m[2m.. [0m[0mhunk){                               [2m[2m.. [0m[0mhunk){\n[2m11 [0m          setTimeout([1mfunction[0m () {   [2m11 [0m          setTimeout([1mfunction[0m () {\n[91;1m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([91m\"<s[0m [92;1m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([92m\"<s[0m\n[91;1m[2m.. [0m[0m[91mpan>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);              [92;1m[2m.. [0m[0m[92mpan[0m [92;1;4mclass='char'[0m[92m>\"[0m[1m+[0mchunk[1m+[0m[95m\"</span>\"[0m);\n[2m13 [0m            $([95m'body, html'[0m).scrollTo [2m13 [0m            $([95m'body, html'[0m).scrollTo\n[2m[2m.. [0m[0mp($(document).height());             [2m[2m.. [0m[0mp($(document).height());\n[2m14 [0m          }, index[1m*[0m5);               [2m14 [0m          }, index[1m*[0m5;\n[2m15 [0m      });                            [2m15 [0m      });",
+    "chosenDiffLine": "[92;1m12 [0m            $([95m'#'[0m[1m+[0mlineID).append([92m\"<s[0m",
+    "chosenLineContent": "            $('#'+lineID).append(\"<span class='char'>\"+chunk+\"</span>\");",
+    "expectedLineNumber": 12
+  }
+]

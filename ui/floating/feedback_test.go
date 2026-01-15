@@ -10,73 +10,41 @@ func TestCalculateLineNumber(t *testing.T) {
 		want       int
 	}{
 		{
-			name: "simple add at line 5",
-			diff: `diff --git a/file.go b/file.go
-index abc123..def456 100644
---- a/file.go
-+++ b/file.go
-@@ -3,6 +3,7 @@ package main
- import "fmt"
-
- func main() {
-+    fmt.Println("new line")
-     fmt.Println("hello")
- }`,
-			cursorLine: 8, // The +fmt.Println("new line") line
-			want:       6, // Line 6 in new file
+			name: "jj diff - added line (green)",
+			diff: "[1m[93mfile.go[39m[0m[2m --- Go[0m\n" +
+				"[2m1 [0m[2m1 [0mpackage main\n" +
+				"[2m2 [0m[2m2 [0m\n" +
+				"[92;1m3 [0m[92mfunc newFunc() {}[0m",
+			cursorLine: 3, // The added line
+			want:       3,
 		},
 		{
-			name: "context line after hunk header",
-			diff: `@@ -10,5 +10,6 @@ func foo() {
-     x := 1
-     y := 2
-+    z := 3
-     return x + y
- }`,
-			cursorLine: 1, // "    x := 1" context line
-			want:       10, // First line after @@ header at +10 is line 10
-		},
-		{
-			name: "deleted line should not increment",
-			diff: `@@ -1,4 +1,3 @@
- line1
--deleted
- line2
- line3`,
-			cursorLine: 3, // "line2" - after deleted line
+			name: "jj diff - context line (dim)",
+			diff: "[1m[93mfile.go[39m[0m[2m --- Go[0m\n" +
+				"[2m1 [0m[2m1 [0mpackage main\n" +
+				"[2m2 [0m[2m2 [0mfunc main() {}\n" +
+				"[2m3 [0m[2m3 [0mfunc other() {}",
+			cursorLine: 2, // Context line at new file line 2
 			want:       2,
 		},
 		{
-			name: "cursor on hunk header returns start line",
-			diff: `@@ -1,3 +1,3 @@
- context
- more`,
-			cursorLine: 0, // On @@ line itself
-			want:       1, // Falls back to cursorLine+1 when currentLine==0
+			name: "jj diff - header line falls back to cursorLine+1",
+			diff: "[1m[93mfile.go[39m[0m[2m --- Go[0m\n" +
+				"[2m1 [0m[2m1 [0mpackage main",
+			cursorLine: 0, // Header line, no line number
+			want:       1, // Fallback
 		},
 		{
-			name: "multiple hunks - cursor on added line",
-			diff: `@@ -1,3 +1,4 @@
- line1
-+added1
- line2
-@@ -10,3 +11,4 @@
- line10
-+added10
- line11`,
-			cursorLine: 6, // "+added10" line
-			want:       12, // Line 12 in new file (11=line10, 12=added10)
+			name: "jj diff - cursor beyond diff length",
+			diff: "[2m1 [0mline1\n[2m2 [0mline2",
+			cursorLine: 10,
+			want:       11, // Fallback
 		},
 		{
-			name: "brand new file",
-			diff: `diff --git a/new.go b/new.go
-new file mode 100644
-@@ -0,0 +1,3 @@
-+package main
-+
-+func main() {}`,
-			cursorLine: 3, // "package main"
-			want:       1,
+			name: "jj diff - added line with space before number",
+			diff: "[92;1m 5 [0m  newLine();",
+			cursorLine: 0,
+			want:       5,
 		},
 	}
 

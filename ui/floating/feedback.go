@@ -2,6 +2,8 @@ package floating
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -113,12 +115,13 @@ func (m *FeedbackModal) View() string {
 	// Build content
 	var lines []string
 
-	// Show context: file path (line number disabled until CalculateLineNumber is fixed)
-	// TODO: Re-enable line number display once CalculateLineNumber correctly maps
-	// diff cursor positions to actual source file line numbers. The function needs
-	// to parse unified diff hunk headers and count context/addition lines properly.
-	// Format should be: fmt.Sprintf("@%s:%d", m.filePath, m.lineNumber)
-	context := theme.DimmedStyle.Render(fmt.Sprintf("@%s", m.filePath))
+	// Show context: file path and line number
+	var context string
+	if m.lineNumber > 0 {
+		context = theme.DimmedStyle.Render(fmt.Sprintf("@%s:%d", m.filePath, m.lineNumber))
+	} else {
+		context = theme.DimmedStyle.Render(fmt.Sprintf("@%s", m.filePath))
+	}
 	lines = append(lines, context)
 	lines = append(lines, "")
 
@@ -215,73 +218,21 @@ func (m *FeedbackModal) Value() string {
 }
 
 // CalculateLineNumber converts a diff cursor position to the actual file line number.
-// It parses unified diff format hunk headers (@@ -old,count +new,count @@) and counts
-// context/addition lines to determine the line number in the current version of the file.
+// It extracts the line number from ANSI-colored jj diff output by parsing the
+// color codes that indicate line numbers (green for added, dim for context).
 func CalculateLineNumber(diffContent string, cursorLine int) int {
 	lines := strings.Split(diffContent, "\n")
-	if cursorLine >= len(lines) {
+	if cursorLine < 0 || cursorLine >= len(lines) {
 		return cursorLine + 1
 	}
 
-	// Track state
-	var newFileStart int // Starting line number in new file (from hunk header)
-	var linesInNewFile int // Count of lines we've seen that exist in new file
-	inHunk := false
-
-	for i := 0; i <= cursorLine && i < len(lines); i++ {
-		line := lines[i]
-
-		// Parse hunk header: @@ -old,count +new,count @@ optional context
-		if strings.HasPrefix(line, "@@") {
-			// Find the +N or +N,M part
-			// Format: @@ -1,3 +1,4 @@ or @@ -1 +1 @@
-			if idx := strings.Index(line, " +"); idx != -1 {
-				rest := line[idx+2:] // Skip " +"
-				// Find where the number ends (space, comma, or end)
-				end := strings.IndexAny(rest, ", ")
-				if end == -1 {
-					end = len(rest)
-				}
-				var n int
-				if _, err := fmt.Sscanf(rest[:end], "%d", &n); err == nil {
-					newFileStart = n
-					linesInNewFile = 0
-					inHunk = true
-				}
-			}
-			continue
-		}
-
-		// Only count lines when we're inside a hunk
-		if inHunk {
-			if len(line) == 0 {
-				// Empty line - in proper diff this would be " " but handle gracefully
-				// Treat as context line (exists in new file)
-				linesInNewFile++
-			} else {
-				firstChar := line[0]
-				// Context lines (space) and additions (+) exist in new file
-				if firstChar == ' ' || firstChar == '+' {
-					linesInNewFile++
-				}
-				// Deletions (-) don't exist in new file, don't count
-				// Backslash lines (\ No newline...) don't count
-			}
-		}
+	// Extract line number from the current line using ANSI code parsing
+	lineNumber := ExtractLineNumberFromDiffLine(lines[cursorLine])
+	if lineNumber > 0 {
+		return lineNumber
 	}
 
-	// Calculate final line number
-	if inHunk && newFileStart > 0 {
-		// linesInNewFile counts lines after the hunk header
-		// If cursor is on hunk header itself, linesInNewFile=0, return newFileStart
-		// If cursor is on first content line, linesInNewFile=1, return newFileStart
-		if linesInNewFile == 0 {
-			return newFileStart
-		}
-		return newFileStart + linesInNewFile - 1
-	}
-
-	// Fallback for cursor positions before any hunk
+	// Fallback for lines without extractable line numbers (headers, etc.)
 	return cursorLine + 1
 }
 
@@ -312,4 +263,28 @@ func RenderSimpleOverlay(base, overlay string, width, height int) string {
 	}
 
 	return strings.Join(result, "\n")
+}
+
+// ansiLineNumberPattern matches ANSI escape sequences that precede line numbers in jj diff output.
+// It captures the line number from:
+// - Green (added lines): [92;1m or [92m followed by optional space and digits
+// - Dim (context lines): [2m followed by optional space and digits
+// The pattern handles both raw ANSI codes (with \x1b prefix) and text representation (without).
+// The pattern uses non-capturing groups for the ANSI codes and captures just the number.
+var ansiLineNumberPattern = regexp.MustCompile(`(?:\x1b)?\[(?:92(?:;1)?m|2m)\s*(\d+)`)
+
+// ExtractLineNumberFromDiffLine extracts the new file line number from a jj diff line.
+// It uses ANSI escape codes as semantic markers:
+// - Green (92): Added line - the number is the new file line
+// - Dim (2): Context line - the number shown is the new file line (from right side of side-by-side diff)
+// Returns 0 if no valid line number can be extracted (e.g., deleted lines, headers).
+func ExtractLineNumberFromDiffLine(line string) int {
+	match := ansiLineNumberPattern.FindStringSubmatch(line)
+	if match != nil && len(match) > 1 {
+		n, err := strconv.Atoi(match[1])
+		if err == nil {
+			return n
+		}
+	}
+	return 0
 }
