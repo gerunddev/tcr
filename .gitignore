@@ -1,0 +1,8 @@
+# Binary
+tcr
+
+# Test output
+*.test
+feedback.md
+review.md
+test.md
