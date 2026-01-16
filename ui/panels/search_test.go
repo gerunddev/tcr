@@ -251,7 +251,7 @@ func TestDiffPanel_IsSearching(t *testing.T) {
 	}
 }
 
-func TestDiffPanel_SearchResetOnSetDiff(t *testing.T) {
+func TestDiffPanel_SearchPersistsOnSetDiff(t *testing.T) {
 	p := NewDiffPanel()
 	p.SetSize(80, 24)
 
@@ -260,14 +260,17 @@ func TestDiffPanel_SearchResetOnSetDiff(t *testing.T) {
 	p.searchState.matches = []int{1, 2, 3}
 	p.searchState.currentMatch = 1
 
-	// Set new diff should reset search
+	// Set new diff should keep search active but clear old matches
+	// (matches will be recalculated based on new content and current query)
 	p.SetDiff("test.go", "line1\nline2\nline3")
 
-	if p.searchState.active {
-		t.Error("search should be deactivated after SetDiff")
+	// Search mode should stay active (unified search behavior)
+	if !p.searchState.active {
+		t.Error("search should stay active after SetDiff")
 	}
-	if len(p.searchState.matches) != 0 {
-		t.Error("matches should be cleared after SetDiff")
+	// Old matches should be cleared (will be recalculated if query exists)
+	if p.searchState.currentMatch != -1 {
+		t.Error("currentMatch should be reset to -1 after SetDiff")
 	}
 }
 
@@ -289,5 +292,121 @@ func TestDiffPanel_SearchResetOnClearDiff(t *testing.T) {
 	}
 	if len(p.searchState.matches) != 0 {
 		t.Error("matches should be cleared after ClearDiff")
+	}
+}
+
+func TestDiffPanel_ActivateDeactivateSearch(t *testing.T) {
+	p := NewDiffPanel()
+	p.SetSize(80, 24)
+	p.SetDiff("test.go", "line1\nline2\nline3")
+
+	// Activate search externally
+	p.ActivateSearch()
+
+	if !p.IsSearching() {
+		t.Error("should be searching after ActivateSearch()")
+	}
+
+	// Deactivate search externally
+	p.DeactivateSearch()
+
+	if p.IsSearching() {
+		t.Error("should not be searching after DeactivateSearch()")
+	}
+}
+
+func TestDiffPanel_SetSearchQuery(t *testing.T) {
+	p := NewDiffPanel()
+	p.SetSize(80, 24)
+	p.SetDiff("test.go", "line1 foo\nline2\nline3 foo bar")
+
+	// Activate search, set query, and set matches (simulating app behavior)
+	p.ActivateSearch()
+	p.SetSearchQuery("foo")
+	p.SetSearchMatches([]int{0, 2}) // Lines 0 and 2 contain "foo"
+
+	// Should have matches set
+	if !p.searchState.HasMatches() {
+		t.Error("should have matches for 'foo'")
+	}
+	if p.MatchCount() != 2 {
+		t.Errorf("expected 2 matches, got %d", p.MatchCount())
+	}
+}
+
+func TestDiffPanel_CycleNextMatch(t *testing.T) {
+	p := NewDiffPanel()
+	p.SetSize(80, 24)
+	p.SetDiff("test.go", "line1 foo\nline2\nline3 foo")
+
+	// Activate search, set query, and set matches (simulating app behavior)
+	p.ActivateSearch()
+	p.SetSearchQuery("foo")
+	p.SetSearchMatches([]int{0, 2}) // Lines 0 and 2 contain "foo"
+
+	// Initial match should be first one (line 0)
+	if p.CurrentMatchIndex() != 1 {
+		t.Errorf("expected current match 1, got %d", p.CurrentMatchIndex())
+	}
+	if p.cursorLine != 0 {
+		t.Errorf("cursor should be at line 0, got %d", p.cursorLine)
+	}
+
+	// Cycle to next match (line 2)
+	p.CycleNextMatch()
+	if p.CurrentMatchIndex() != 2 {
+		t.Errorf("expected current match 2, got %d", p.CurrentMatchIndex())
+	}
+	if p.cursorLine != 2 {
+		t.Errorf("cursor should be at line 2, got %d", p.cursorLine)
+	}
+
+	// Cycle again should wrap to first match
+	p.CycleNextMatch()
+	if p.CurrentMatchIndex() != 1 {
+		t.Errorf("expected current match 1 after wrap, got %d", p.CurrentMatchIndex())
+	}
+}
+
+func TestDiffPanel_SetSearchMatches(t *testing.T) {
+	p := NewDiffPanel()
+	p.SetSize(80, 24)
+
+	// Set diff content
+	p.SetDiff("test.go", "line1 foo\nline2\nline3 foo bar")
+
+	// Activate search and set matches directly (simulating app behavior)
+	p.ActivateSearch()
+	p.SetSearchQuery("foo")
+	p.SetSearchMatches([]int{0, 2}) // Lines 0 and 2 contain "foo"
+
+	if !p.IsSearching() {
+		t.Error("should be searching after ActivateSearch")
+	}
+	if p.searchState.Query() != "foo" {
+		t.Errorf("expected query 'foo', got %q", p.searchState.Query())
+	}
+	if !p.searchState.HasMatches() {
+		t.Error("should have matches")
+	}
+	if p.MatchCount() != 2 {
+		t.Errorf("expected 2 matches, got %d", p.MatchCount())
+	}
+}
+
+func TestDiffPanel_SetSearchMatches_Empty(t *testing.T) {
+	p := NewDiffPanel()
+	p.SetSize(80, 24)
+
+	// Set diff content
+	p.SetDiff("test.go", "line1\nline2")
+
+	// Activate search with no matches
+	p.ActivateSearch()
+	p.SetSearchQuery("nonexistent")
+	p.SetSearchMatches(nil)
+
+	if p.searchState.HasMatches() {
+		t.Error("should not have matches")
 	}
 }

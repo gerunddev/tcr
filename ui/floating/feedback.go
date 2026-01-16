@@ -280,7 +280,7 @@ var ansiLineNumberPattern = regexp.MustCompile(`(?:\x1b)?\[(?:92(?:;1)?m|2m)\s*(
 // Returns 0 if no valid line number can be extracted (e.g., deleted lines, headers).
 func ExtractLineNumberFromDiffLine(line string) int {
 	match := ansiLineNumberPattern.FindStringSubmatch(line)
-	if match != nil && len(match) > 1 {
+	if len(match) > 1 {
 		n, err := strconv.Atoi(match[1])
 		if err == nil {
 			return n

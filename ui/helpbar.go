@@ -35,7 +35,8 @@ func getHints(ctx HelpBarContext) []HelpHint {
 
 	if ctx.SearchActive {
 		return []HelpHint{
-			{Key: "enter", Desc: "cycle"},
+			{Key: "up/dn", Desc: "file nav"},
+			{Key: "enter", Desc: "cycle match"},
 			{Key: "esc", Desc: "close"},
 		}
 	}

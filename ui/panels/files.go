@@ -18,9 +18,10 @@ type FileSelectedMsg struct {
 // FilesPanel shows changed files from VCS
 type FilesPanel struct {
 	BasePanel
-	files    []vcs.FileChange
-	viewport viewport.Model
-	ready    bool
+	files        []vcs.FileChange
+	filteredIdxs []int // Indices into files slice, nil means show all
+	viewport     viewport.Model
+	ready        bool
 }
 
 // NewFilesPanel creates a new files panel
@@ -33,11 +34,90 @@ func NewFilesPanel() *FilesPanel {
 // SetFiles updates the file list
 func (p *FilesPanel) SetFiles(files []vcs.FileChange) {
 	p.files = files
+	p.filteredIdxs = nil
 	p.cursor = 0
 	if p.ready {
 		p.viewport.SetContent(p.renderContent())
 		p.viewport.GotoTop()
 	}
+}
+
+// SetFilteredIndices sets which files to show (by index into full files list)
+// Pass nil to show all files
+func (p *FilesPanel) SetFilteredIndices(indices []int) {
+	p.filteredIdxs = indices
+
+	if len(indices) > 0 {
+		// If current selection is not in filtered list, move to first filtered file
+		found := false
+		for _, fileIdx := range indices {
+			if fileIdx == p.cursor {
+				found = true
+				// Keep the cursor at the same file index
+				break
+			}
+		}
+		if !found {
+			// Move cursor to first filtered file
+			p.cursor = indices[0]
+		}
+	}
+
+	if p.ready {
+		p.viewport.SetContent(p.renderContent())
+		p.viewport.GotoTop()
+	}
+}
+
+// ClearFilter removes any active filtering
+func (p *FilesPanel) ClearFilter() {
+	p.filteredIdxs = nil
+	if p.ready {
+		p.viewport.SetContent(p.renderContent())
+	}
+}
+
+// IsFiltered returns true if a filter is active
+func (p *FilesPanel) IsFiltered() bool {
+	return p.filteredIdxs != nil
+}
+
+// displayFiles returns the files to display (filtered or all)
+func (p *FilesPanel) displayFiles() []vcs.FileChange {
+	if p.filteredIdxs == nil {
+		return p.files
+	}
+	result := make([]vcs.FileChange, 0, len(p.filteredIdxs))
+	for _, idx := range p.filteredIdxs {
+		if idx >= 0 && idx < len(p.files) {
+			result = append(result, p.files[idx])
+		}
+	}
+	return result
+}
+
+// displayIndexToFileIndex converts display position to actual file index
+func (p *FilesPanel) displayIndexToFileIndex(displayIdx int) int {
+	if p.filteredIdxs == nil {
+		return displayIdx
+	}
+	if displayIdx >= 0 && displayIdx < len(p.filteredIdxs) {
+		return p.filteredIdxs[displayIdx]
+	}
+	return -1
+}
+
+// fileIndexToDisplayIndex converts actual file index to display position
+func (p *FilesPanel) fileIndexToDisplayIndex(fileIdx int) int {
+	if p.filteredIdxs == nil {
+		return fileIdx
+	}
+	for i, idx := range p.filteredIdxs {
+		if idx == fileIdx {
+			return i
+		}
+	}
+	return -1
 }
 
 func (p *FilesPanel) Init() tea.Cmd {
@@ -52,10 +132,10 @@ func (p *FilesPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		// Arrow keys only for file navigation
 		case "up":
-			p.CursorUp(len(p.files))
+			p.cursorUpFiltered()
 			p.ensureCursorVisible()
 		case "down":
-			p.CursorDown(len(p.files))
+			p.cursorDownFiltered()
 			p.ensureCursorVisible()
 		}
 	}
@@ -77,11 +157,47 @@ func (p *FilesPanel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return p, nil
 }
 
+// cursorUpFiltered moves cursor up within filtered list (or all files if no filter)
+func (p *FilesPanel) cursorUpFiltered() {
+	if p.filteredIdxs == nil {
+		// No filter, use normal navigation
+		p.CursorUp(len(p.files))
+		return
+	}
+
+	// Find current position in filtered list
+	displayIdx := p.fileIndexToDisplayIndex(p.cursor)
+	if displayIdx > 0 {
+		p.cursor = p.filteredIdxs[displayIdx-1]
+	}
+}
+
+// cursorDownFiltered moves cursor down within filtered list (or all files if no filter)
+func (p *FilesPanel) cursorDownFiltered() {
+	if p.filteredIdxs == nil {
+		// No filter, use normal navigation
+		p.CursorDown(len(p.files))
+		return
+	}
+
+	// Find current position in filtered list
+	displayIdx := p.fileIndexToDisplayIndex(p.cursor)
+	if displayIdx >= 0 && displayIdx < len(p.filteredIdxs)-1 {
+		p.cursor = p.filteredIdxs[displayIdx+1]
+	}
+}
+
 func (p *FilesPanel) ensureCursorVisible() {
-	if p.cursor < p.viewport.YOffset {
-		p.viewport.SetYOffset(p.cursor)
-	} else if p.cursor >= p.viewport.YOffset+p.viewport.Height {
-		p.viewport.SetYOffset(p.cursor - p.viewport.Height + 1)
+	// Use display index for viewport positioning
+	displayIdx := p.fileIndexToDisplayIndex(p.cursor)
+	if displayIdx < 0 {
+		displayIdx = 0
+	}
+
+	if displayIdx < p.viewport.YOffset {
+		p.viewport.SetYOffset(displayIdx)
+	} else if displayIdx >= p.viewport.YOffset+p.viewport.Height {
+		p.viewport.SetYOffset(displayIdx - p.viewport.Height + 1)
 	}
 }
 
@@ -117,7 +233,11 @@ func (p *FilesPanel) renderContent() string {
 	var lines []string
 	contentWidth := p.ContentWidth()
 
-	for i, file := range p.files {
+	displayFiles := p.displayFiles()
+	for displayIdx, file := range displayFiles {
+		// Get actual file index for cursor comparison
+		fileIdx := p.displayIndexToFileIndex(displayIdx)
+
 		// Style the status indicator based on file status
 		var statusStyle lipgloss.Style
 		switch file.Status {
@@ -142,7 +262,7 @@ func (p *FilesPanel) renderContent() string {
 			path = truncate(path, maxPathLen)
 		}
 
-		if i == p.cursor {
+		if fileIdx == p.cursor {
 			// Show selected item in yellow
 			path = theme.SelectedItemStyle.Render(path)
 		} else {
@@ -164,9 +284,26 @@ func (p *FilesPanel) SelectedFile() *vcs.FileChange {
 	return nil
 }
 
-// Count returns the number of files
+// Count returns the number of visible files (filtered or all)
 func (p *FilesPanel) Count() int {
+	if p.filteredIdxs != nil {
+		return len(p.filteredIdxs)
+	}
 	return len(p.files)
+}
+
+// TotalCount returns the total number of files (ignoring filter)
+func (p *FilesPanel) TotalCount() int {
+	return len(p.files)
+}
+
+// FilePaths returns all file paths (for search)
+func (p *FilesPanel) FilePaths() []string {
+	paths := make([]string, len(p.files))
+	for i, f := range p.files {
+		paths[i] = f.Path
+	}
+	return paths
 }
 
 // truncate shortens a string to the given display width

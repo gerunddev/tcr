@@ -1,10 +1,7 @@
 package panels
 
 import (
-	"bytes"
 	"fmt"
-	"os/exec"
-	"sort"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -16,12 +13,13 @@ import (
 
 // SearchState holds the state for diff search
 type SearchState struct {
-	active       bool         // Whether search mode is active
-	matches      []int        // Line indices that match (0-indexed)
-	matchSet     map[int]bool // O(1) lookup for matched lines
-	currentMatch int          // Index into matches slice (-1 if no matches)
-	input        textinput.Model
-	fzfError     string // Error message if fzf unavailable
+	active          bool         // Whether search mode is active
+	matches         []int        // Line indices that match (0-indexed)
+	matchSet        map[int]bool // O(1) lookup for matched lines
+	currentMatch    int          // Index into matches slice (-1 if no matches)
+	input           textinput.Model
+	externalInputView string     // When set, use this for rendering instead of local input
+	fzfError        string       // Error message if fzf unavailable
 }
 
 // NewSearchState creates a new search state
@@ -45,6 +43,7 @@ func (s *SearchState) Reset() {
 	s.matchSet = nil
 	s.currentMatch = -1
 	s.input.SetValue("")
+	s.externalInputView = ""
 	s.fzfError = ""
 }
 
@@ -53,6 +52,7 @@ func (s *SearchState) Activate() {
 	s.active = true
 	s.input.Focus()
 	s.input.SetValue("")
+	s.externalInputView = ""
 	s.matches = nil
 	s.matchSet = nil
 	s.currentMatch = -1
@@ -140,7 +140,15 @@ func (s *SearchState) UpdateInput(msg tea.Msg) tea.Cmd {
 
 // InputView renders the textinput
 func (s *SearchState) InputView() string {
+	if s.externalInputView != "" {
+		return s.externalInputView
+	}
 	return s.input.View()
+}
+
+// SetExternalInputView sets an external input view for rendering (used in unified search mode)
+func (s *SearchState) SetExternalInputView(view string) {
+	s.externalInputView = view
 }
 
 // DiffPanel shows diff content with a cursor for line selection
@@ -168,11 +176,15 @@ func (p *DiffPanel) SetDiff(filePath, content string) {
 	p.lines = strings.Split(content, "\n")
 	p.cursorLine = 0
 
-	// Clear search when changing files
-	p.searchState.Reset()
-
 	// Update title to show file path
 	p.SetTitle("Diff: " + filePath)
+
+	// Clear search matches (app will re-apply if needed)
+	if p.searchState.active {
+		p.searchState.matches = nil
+		p.searchState.matchSet = nil
+		p.searchState.currentMatch = -1
+	}
 
 	if p.ready {
 		p.viewport.SetContent(p.renderContent())
@@ -258,33 +270,41 @@ func (p *DiffPanel) handleSearchInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return p, nil
 
 	default:
-		// Pass to textinput for query editing
-		oldQuery := p.searchState.Query()
+		// Pass to textinput for query editing (app handles actual search)
 		cmd := p.searchState.UpdateInput(msg)
-
-		// Re-run search if query changed
-		if p.searchState.Query() != oldQuery {
-			p.performSearch()
-			p.viewport.SetContent(p.renderContent())
-		}
-
 		return p, cmd
 	}
 }
 
-// performSearch runs fzf --filter and updates matches
-func (p *DiffPanel) performSearch() {
-	query := p.searchState.Query()
-	if query == "" {
-		p.searchState.matches = nil
-		p.searchState.matchSet = nil
-		p.searchState.currentMatch = -1
-		return
+// IsSearching returns true if search mode is active
+func (p *DiffPanel) IsSearching() bool {
+	return p.searchState.active
+}
+
+// ActivateSearch enables search mode (called by App)
+func (p *DiffPanel) ActivateSearch() {
+	p.searchState.active = true
+	p.searchState.input.Focus()
+	p.searchState.SetWidth(p.ContentWidth())
+	p.updateViewportSize()
+}
+
+// DeactivateSearch disables search mode (called by App)
+func (p *DiffPanel) DeactivateSearch() {
+	p.searchState.Reset()
+	p.updateViewportSize()
+	if p.ready {
+		p.viewport.SetContent(p.renderContent())
 	}
+}
 
-	// Run fzf --filter
-	matches := p.runFzfFilter(query)
+// SetSearchQuery updates the search query (called by App)
+func (p *DiffPanel) SetSearchQuery(query string) {
+	p.searchState.input.SetValue(query)
+}
 
+// SetSearchMatches sets the search matches directly (called by App to avoid duplicate fzf calls)
+func (p *DiffPanel) SetSearchMatches(matches []int) {
 	p.searchState.matches = matches
 
 	// Build O(1) lookup map
@@ -302,68 +322,42 @@ func (p *DiffPanel) performSearch() {
 	} else {
 		p.searchState.currentMatch = -1
 	}
+
+	if p.ready {
+		p.viewport.SetContent(p.renderContent())
+	}
 }
 
-// runFzfFilter executes fzf --filter and returns matching line indices
-func (p *DiffPanel) runFzfFilter(query string) []int {
-	if len(p.lines) == 0 {
-		return nil
-	}
-
-	// Check if fzf is available
-	fzfPath, err := exec.LookPath("fzf")
-	if err != nil {
-		p.searchState.fzfError = "fzf not found"
-		return nil
-	}
-
-	// Prepare input with line numbers for tracking
-	var input strings.Builder
-	for i, line := range p.lines {
-		// Format: "linenum:content" so we can extract indices
-		fmt.Fprintf(&input, "%d:%s\n", i, line)
-	}
-
-	// Run fzf --filter
-	cmd := exec.Command(fzfPath, "--filter", query)
-	cmd.Stdin = strings.NewReader(input.String())
-
-	var stdout bytes.Buffer
-	cmd.Stdout = &stdout
-
-	// fzf returns exit code 1 when no matches, which is fine
-	_ = cmd.Run()
-
-	// Parse output to extract line indices
-	output := stdout.String()
-	if output == "" {
-		return nil
-	}
-
-	var matches []int
-	for _, line := range strings.Split(strings.TrimSpace(output), "\n") {
-		if line == "" {
-			continue
-		}
-		// Extract line number from "linenum:content"
-		idx := strings.Index(line, ":")
-		if idx > 0 {
-			var lineNum int
-			if _, err := fmt.Sscanf(line[:idx], "%d", &lineNum); err == nil {
-				matches = append(matches, lineNum)
-			}
-		}
-	}
-
-	// Sort by line number (fzf sorts by score)
-	sort.Ints(matches)
-
-	return matches
+// SetSearchInputView sets the external input view for proper cursor rendering
+func (p *DiffPanel) SetSearchInputView(view string) {
+	p.searchState.SetExternalInputView(view)
 }
 
-// IsSearching returns true if search mode is active
-func (p *DiffPanel) IsSearching() bool {
-	return p.searchState.active
+// CycleNextMatch moves to the next match and returns true if cursor moved
+func (p *DiffPanel) CycleNextMatch() bool {
+	if !p.searchState.HasMatches() {
+		return false
+	}
+	p.searchState.NextMatch()
+	p.cursorLine = p.searchState.CurrentMatchLine()
+	p.ensureCursorVisible()
+	if p.ready {
+		p.viewport.SetContent(p.renderContent())
+	}
+	return true
+}
+
+// MatchCount returns the number of matches in current diff
+func (p *DiffPanel) MatchCount() int {
+	return len(p.searchState.matches)
+}
+
+// CurrentMatchIndex returns the current match index (1-based) or 0 if no matches
+func (p *DiffPanel) CurrentMatchIndex() int {
+	if p.searchState.currentMatch < 0 {
+		return 0
+	}
+	return p.searchState.currentMatch + 1
 }
 
 func (p *DiffPanel) cursorUp() {
@@ -601,6 +595,11 @@ func (p *DiffPanel) CurrentLineContent() string {
 // DiffContent returns the full diff content as a string
 func (p *DiffPanel) DiffContent() string {
 	return strings.Join(p.lines, "\n")
+}
+
+// Lines returns the diff lines for searching
+func (p *DiffPanel) Lines() []string {
+	return p.lines
 }
 
 // Ensure DiffPanel implements Panel

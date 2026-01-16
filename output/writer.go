@@ -27,7 +27,7 @@ func AppendFeedback(outputPath, filePath string, line int, comment string) error
 	if err != nil {
 		return fmt.Errorf("failed to open output file: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Format the feedback
 	// @path:line (or @path if line is 0)
