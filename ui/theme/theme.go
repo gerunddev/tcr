@@ -77,10 +77,13 @@ var (
 	DiffHunkHeader  = lipgloss.NewStyle().Foreground(ColorBlue).Bold(true)
 )
 
-// Cursor highlight style for diff panel
+// Cursor highlight styles - using Reverse for guaranteed visibility over text
 var (
-	CursorLineStyle = lipgloss.NewStyle().
-			Background(ColorSurface)
+	CursorLineStyle       = lipgloss.NewStyle().Reverse(true)
+	CursorAddLineStyle    = lipgloss.NewStyle().Reverse(true).Foreground(ColorGreen)
+	CursorRemoveLineStyle = lipgloss.NewStyle().Reverse(true).Foreground(ColorRed)
+	CursorContextStyle    = lipgloss.NewStyle().Reverse(true).Foreground(ColorDimWhite)
+	CursorHunkStyle       = lipgloss.NewStyle().Reverse(true).Foreground(ColorBlue).Bold(true)
 )
 
 // Search styles

@@ -2,6 +2,7 @@ package panels
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -9,7 +10,11 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/gerunddev/tcr/ui/theme"
+	"github.com/mattn/go-runewidth"
 )
+
+// ansiRegex matches ANSI escape sequences
+var ansiRegex = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 // SearchState holds the state for diff search
 type SearchState struct {
@@ -525,23 +530,30 @@ func (p *DiffPanel) renderContent() string {
 	var rendered []string
 
 	for i, line := range p.lines {
-		styledLine := p.styleDiffLine(line, contentWidth)
+		// Determine cursor/search state for this line
+		isCursorLine := (i == p.cursorLine)
+		isSearchActive := p.searchState.active && p.searchState.HasMatches()
+		isCurrentMatch := isSearchActive && p.searchState.IsCurrentMatch(i)
+		isOtherMatch := isSearchActive && p.searchState.IsLineMatched(i) && !isCurrentMatch
 
-		// Apply search highlighting if search is active
-		if p.searchState.active && p.searchState.HasMatches() {
-			if p.searchState.IsCurrentMatch(i) {
-				// Current match - most prominent
-				styledLine = theme.SearchCurrentLineStyle.Width(contentWidth).Render(styledLine)
-			} else if p.searchState.IsLineMatched(i) {
-				// Other matches - subtle highlight
-				styledLine = theme.SearchMatchLineStyle.Width(contentWidth).Render(styledLine)
-			} else if i == p.cursorLine {
-				// Cursor on non-match line
-				styledLine = theme.CursorLineStyle.Width(contentWidth).Render(styledLine)
-			}
-		} else if i == p.cursorLine {
-			// Normal cursor highlight (when not searching)
-			styledLine = theme.CursorLineStyle.Width(contentWidth).Render(styledLine)
+		// Only strip ANSI for lines that need our styling (cursor/search lines)
+		// Other lines keep their original colors
+		needsOurStyling := isCursorLine || isCurrentMatch || isOtherMatch
+
+		var styledLine string
+		if needsOurStyling {
+			// Strip ANSI so our Reverse style takes effect
+			cleanLine := stripANSI(line)
+			truncated := p.truncateLine(cleanLine, contentWidth)
+			padded := padToWidth(truncated, contentWidth)
+			style := p.getLineStyle(cleanLine, isCursorLine, isCurrentMatch, isOtherMatch)
+			styledLine = style.Width(contentWidth).Render(padded)
+		} else {
+			// Keep original line with its colors, just pad for consistent width
+			truncated := p.truncateLine(line, contentWidth)
+			padded := padToWidth(truncated, contentWidth)
+			style := p.getLineStyle(line, false, false, false)
+			styledLine = style.Render(padded)
 		}
 
 		rendered = append(rendered, styledLine)
@@ -550,29 +562,92 @@ func (p *DiffPanel) renderContent() string {
 	return strings.Join(rendered, "\n")
 }
 
-func (p *DiffPanel) styleDiffLine(line string, maxWidth int) string {
-	// Truncate if needed
-	if lipgloss.Width(line) > maxWidth {
-		line = lipgloss.NewStyle().MaxWidth(maxWidth).Render(line)
+// padToWidth pads a string with spaces to reach the target width (plain text, no ANSI)
+func padToWidth(s string, width int) string {
+	currentWidth := runewidth.StringWidth(s)
+	if currentWidth >= width {
+		return s
 	}
-
-	// Apply diff-specific styling
-	if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
-		return theme.DiffAddLine.Render(line)
-	}
-	if strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "---") {
-		return theme.DiffRemoveLine.Render(line)
-	}
-	if strings.HasPrefix(line, "@@") {
-		return theme.DiffHunkHeader.Render(line)
-	}
-	if strings.HasPrefix(line, "diff ") || strings.HasPrefix(line, "index ") ||
-		strings.HasPrefix(line, "---") || strings.HasPrefix(line, "+++") {
-		return theme.DiffHunkHeader.Render(line)
-	}
-
-	return theme.DiffContextLine.Render(line)
+	return s + strings.Repeat(" ", width-currentWidth)
 }
+
+// truncateLine truncates a line if it exceeds maxWidth (plain text, no ANSI)
+func (p *DiffPanel) truncateLine(line string, maxWidth int) string {
+	currentWidth := runewidth.StringWidth(line)
+	if currentWidth <= maxWidth {
+		return line
+	}
+	// Truncate rune by rune until we fit
+	var result strings.Builder
+	width := 0
+	for _, r := range line {
+		rw := runewidth.RuneWidth(r)
+		if width+rw > maxWidth {
+			break
+		}
+		result.WriteRune(r)
+		width += rw
+	}
+	return result.String()
+}
+
+// stripANSI removes ANSI escape sequences from a string
+func stripANSI(s string) string {
+	return ansiRegex.ReplaceAllString(s, "")
+}
+
+// getLineStyle returns the appropriate style based on line type and cursor/search state
+func (p *DiffPanel) getLineStyle(line string, isCursor, isCurrentMatch, isOtherMatch bool) lipgloss.Style {
+	// Determine line type
+	isAdd := strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++")
+	isRemove := strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "---")
+	isHunk := strings.HasPrefix(line, "@@") || strings.HasPrefix(line, "diff ") ||
+		strings.HasPrefix(line, "index ") || strings.HasPrefix(line, "---") || strings.HasPrefix(line, "+++")
+
+	// Return combined style based on state
+	if isCurrentMatch {
+		// Current search match - use search highlight with diff colors
+		if isAdd {
+			return theme.SearchCurrentLineStyle.Foreground(theme.ColorGreen)
+		} else if isRemove {
+			return theme.SearchCurrentLineStyle.Foreground(theme.ColorRed)
+		} else if isHunk {
+			return theme.SearchCurrentLineStyle.Foreground(theme.ColorBlue).Bold(true)
+		}
+		return theme.SearchCurrentLineStyle.Foreground(theme.ColorDimWhite)
+	} else if isOtherMatch {
+		// Other search match
+		if isAdd {
+			return theme.SearchMatchLineStyle.Foreground(theme.ColorGreen)
+		} else if isRemove {
+			return theme.SearchMatchLineStyle.Foreground(theme.ColorRed)
+		} else if isHunk {
+			return theme.SearchMatchLineStyle.Foreground(theme.ColorBlue).Bold(true)
+		}
+		return theme.SearchMatchLineStyle.Foreground(theme.ColorDimWhite)
+	} else if isCursor {
+		// Cursor line - use cursor background with diff colors
+		if isAdd {
+			return theme.CursorAddLineStyle
+		} else if isRemove {
+			return theme.CursorRemoveLineStyle
+		} else if isHunk {
+			return theme.CursorHunkStyle
+		}
+		return theme.CursorContextStyle
+	}
+
+	// Normal line - foreground only
+	if isAdd {
+		return theme.DiffAddLine
+	} else if isRemove {
+		return theme.DiffRemoveLine
+	} else if isHunk {
+		return theme.DiffHunkHeader
+	}
+	return theme.DiffContextLine
+}
+
 
 // CursorLine returns the current cursor line number (0-indexed)
 func (p *DiffPanel) CursorLine() int {
