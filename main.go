@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gerunddev/tcr/output"
@@ -11,14 +14,20 @@ import (
 )
 
 func main() {
-	// Check for positional argument
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "Error: output file is required")
-		fmt.Fprintln(os.Stderr, "Usage: tcr <output.md>")
-		os.Exit(1)
-	}
+	var outputPath string
 
-	outputPath := os.Args[1]
+	if len(os.Args) < 2 {
+		// Generate a random filename in /tmp
+		randomBytes := make([]byte, 8)
+		if _, err := rand.Read(randomBytes); err != nil {
+			fmt.Fprintf(os.Stderr, "Error generating random filename: %v\n", err)
+			os.Exit(1)
+		}
+		outputPath = filepath.Join("/tmp", "tcr-"+hex.EncodeToString(randomBytes)+".md")
+		fmt.Fprintf(os.Stderr, "Output file: %s\n", outputPath)
+	} else {
+		outputPath = os.Args[1]
+	}
 
 	if err := output.ValidateOutputPath(outputPath); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
