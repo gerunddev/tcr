@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // FileStatus represents the status of a file change
@@ -58,15 +59,57 @@ func Detect(dir string) (VCS, error) {
 
 // JJ implements VCS for jujutsu
 type JJ struct {
-	dir string
+	dir      string
+	baseRev  string    // Cached base revision
+	baseErr  error     // Cached error if resolution failed
+	baseOnce sync.Once // Ensures base resolution happens only once
 }
 
 func (j *JJ) Name() string {
 	return "jj"
 }
 
+// baseRevset is the revset expression to find the base revision for diffing.
+// It finds the nearest bookmark ancestor, or falls back to trunk().
+const baseRevset = "coalesce(heads(::@ & bookmarks()), trunk())"
+
+// resolveBase determines the base revision for diffing.
+// It returns the commit ID of the nearest bookmark ancestor, or trunk() as fallback.
+// The result is cached so only one jj command is executed per session.
+func (j *JJ) resolveBase() (string, error) {
+	j.baseOnce.Do(func() {
+		cmd := exec.Command("jj", "log", "-r", baseRevset, "-T", "commit_id", "--no-graph", "--limit", "1")
+		cmd.Dir = j.dir
+		output, err := cmd.Output()
+		if err != nil {
+			// Check if it's an exit error with stderr
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				stderr := string(exitErr.Stderr)
+				j.baseErr = fmt.Errorf("failed to resolve base revision: %s\nHint: Create a bookmark at your branch point, or ensure a 'main', 'master', or 'trunk' bookmark exists", strings.TrimSpace(stderr))
+			} else {
+				j.baseErr = fmt.Errorf("failed to resolve base revision: %w\nHint: Create a bookmark at your branch point, or ensure a 'main', 'master', or 'trunk' bookmark exists", err)
+			}
+			return
+		}
+
+		commitID := strings.TrimSpace(string(output))
+		if commitID == "" {
+			j.baseErr = fmt.Errorf("no base revision found: no bookmarks in ancestry and trunk() not found\nHint: Create a bookmark at your branch point, or ensure a 'main', 'master', or 'trunk' bookmark exists")
+			return
+		}
+
+		j.baseRev = commitID
+	})
+	return j.baseRev, j.baseErr
+}
+
 func (j *JJ) ChangedFiles() ([]FileChange, error) {
-	cmd := exec.Command("jj", "diff", "--summary")
+	base, err := j.resolveBase()
+	if err != nil {
+		return nil, err
+	}
+
+	cmd := exec.Command("jj", "diff", "--from", base, "--to", "@", "--summary")
 	cmd.Dir = j.dir
 	output, err := cmd.Output()
 	if err != nil {
@@ -77,7 +120,12 @@ func (j *JJ) ChangedFiles() ([]FileChange, error) {
 }
 
 func (j *JJ) Diff(path string) (string, error) {
-	cmd := exec.Command("jj", "diff", path)
+	base, err := j.resolveBase()
+	if err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command("jj", "diff", "--from", base, "--to", "@", path)
 	cmd.Dir = j.dir
 	output, err := cmd.Output()
 	if err != nil {
@@ -87,7 +135,12 @@ func (j *JJ) Diff(path string) (string, error) {
 }
 
 func (j *JJ) DiffAll() (string, error) {
-	cmd := exec.Command("jj", "diff")
+	base, err := j.resolveBase()
+	if err != nil {
+		return "", err
+	}
+
+	cmd := exec.Command("jj", "diff", "--from", base, "--to", "@")
 	cmd.Dir = j.dir
 	output, err := cmd.Output()
 	if err != nil {
